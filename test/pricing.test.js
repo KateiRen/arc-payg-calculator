@@ -191,7 +191,10 @@ test('published calculator uses workflow pricing and offers an offline copy', ()
 
   assert.doesNotMatch(html, /id="refresh"|fetchAzurePrices|refreshPrices|\/api\/prices/);
   assert.doesNotMatch(html, /id="saveUpdated"|saveUpdatedFile/);
-  assert.match(html, /<header[\s\S]*id="saveOffline"[\s\S]*<\/header>/);
+  assert.match(html, /<header[\s\S]*id="saveOffline" hidden[\s\S]*<\/header>/);
   assert.match(html, /function saveOfflineFile\(/);
-  assert.match(html, /\$\('saveOffline'\)\.onclick=saveOfflineFile/);
+  assert.match(html, /location\.hostname==='kateiren\.github\.io'/);
+  assert.match(html, /location\.pathname\.startsWith\('\/arc-payg-calculator\/'\)/);
+  assert.match(html, /\$\('saveOffline'\)\.hidden=!onGitHubPages/);
+  assert.match(html, /if\(onGitHubPages\)\$\('saveOffline'\)\.onclick=saveOfflineFile/);
 });
