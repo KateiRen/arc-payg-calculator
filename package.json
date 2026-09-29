@@ -1,0 +1,11 @@
+{
+  "name": "sql-payg-test",
+  "version": "1.0.0",
+  "private": true,
+  "description": "GitHub Pages site showing Azure Arc-enabled SQL Server PAYG prices from the Azure Retail Prices API",
+  "scripts": {
+    "fetch-prices": "node scripts/fetch-prices.js",
+    "test": "node --test"
+  },
+  "license": "MIT"
+}
