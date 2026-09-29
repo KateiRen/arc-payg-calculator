@@ -1,52 +1,54 @@
-# sql-payg-test
+# Arc PAYG vs. SPLA Calculator
 
-A static web page (hosted on GitHub Pages) that shows the pay-as-you-go prices for
-**Azure Arc-enabled SQL Server** and **Microsoft Defender for SQL** from the
-[Azure Retail Prices API](https://learn.microsoft.com/rest/api/cost-management/retail-prices/azure-retail-prices).
-It replaces the previous Excel/PowerQuery solution and applies the same logic:
+A static GitHub Pages calculator for comparing the economics of Azure Arc
+pay-as-you-go licensing and SPLA for SQL Server and Windows Server workloads.
 
-- queries the currencies USD, EUR, AUD, BRL, CAD, CHF, DKK, GBP, INR, JPY, KRW, NOK, NZD and SEK
-- API filter: `productName eq 'Azure Arc-enabled SQL Server - Arc-enabled servers' or productName eq 'Microsoft Defender for SQL' or skuId eq 'DZH318Z0LNG7/0007'`
-- follows `NextPageLink` to load all pages
-- keeps only rows with `type = Consumption`, `unitOfMeasure = 1 Hour`, `location = Global` and
-  `skuName` in `1 Core`, `Ent edition - PAYG`, `Standard`, `Std edition - PAYG`
-- sorts by `serviceName`, `productName` and adds a `Last Refresh Time` column
+The calculator is self-contained in `site/index.html`. Azure PAYG prices for all
+supported currencies are embedded in that file so the published site loads
+without making a pricing API request. SPLA prices remain user-provided because
+they are not available from the Azure Retail Prices API.
 
-## Using the page
+## Price refresh and deployment
 
-- **Reload prices** – reloads the committed `data/prices.json` snapshot (also loaded automatically
-  when the page opens).
-- **Download CSV** – exports the currently shown rows (e.g. for Excel).
+The **Refresh calculator prices** GitHub Actions workflow:
 
-The browser never calls the Azure Retail Prices API directly. The *Refresh pricing snapshot* GitHub
-Actions workflow fetches the prices server-side at 05:00 UTC on the first day of every month, commits
-`site/data/prices.json` to `main`, and its successful completion triggers a Pages deployment. It can
-also be run manually from the repository's **Actions** tab.
+- can be started manually from the repository's **Actions** tab;
+- runs on the first day of every month at 12:00 AM Pacific time, accounting for
+  both PST and PDT;
+- fetches current SQL Server and Windows Server Arc PAYG prices from the
+  [Azure Retail Prices API](https://learn.microsoft.com/rest/api/cost-management/retail-prices/azure-retail-prices);
+- updates the embedded price map and ISO refresh timestamp in `site/index.html`;
+- commits the refreshed calculator to `main`.
+
+The successful refresh workflow triggers **Deploy calculator to GitHub
+Pages**. Pushes to `main` and manual workflow dispatches also deploy the current
+contents of `site/`.
 
 ## Project layout
 
 | Path | Purpose |
 | --- | --- |
-| `site/` | The static site that is published to GitHub Pages |
-| `site/pricing.js` | Shared fetch/filter/sort logic (browser and Node.js) |
-| `scripts/fetch-prices.js` | Creates the snapshot `site/data/prices.json` |
-| `.github/workflows/refresh-prices.yml` | Fetches and commits the snapshot monthly or manually |
-| `.github/workflows/pages.yml` | Tests and deploys the committed site on pushes to `main` or manually |
+| `site/index.html` | Self-contained calculator published to GitHub Pages |
+| `site/pricing.js` | Azure Retail Prices API fetch and filtering helper |
+| `scripts/fetch-prices.js` | Updates prices and refresh time embedded in the calculator |
+| `.github/workflows/refresh-prices.yml` | Refreshes pricing monthly or manually |
+| `.github/workflows/pages.yml` | Tests and deploys `site/` to GitHub Pages |
 
 ## Setup
 
-1. In the repository settings go to **Settings → Pages** and set **Source** to **GitHub Actions**.
-2. Ensure **Settings → Actions → General → Workflow permissions** allows read and write permissions.
-3. Run *Refresh pricing snapshot* once to create the initial snapshot, or generate and commit it
+1. In **Settings > Pages**, set **Source** to **GitHub Actions**.
+2. In **Settings > Actions > General**, allow workflows read and write
+   permissions so the refresh workflow can commit updated prices.
+3. Run **Refresh calculator prices** from the **Actions** tab once, or refresh
    locally with `npm run fetch-prices`.
-4. Push to `main` (or run the *Deploy pricing page to GitHub Pages* workflow manually).
+4. Push to `main`, or manually run **Deploy calculator to GitHub Pages**.
 
 ## Development
 
-Requires Node.js 18 or later (no dependencies).
+Node.js 20 or later is recommended. There are no package dependencies.
 
 ```sh
-npm test               # run the unit tests
-npm run fetch-prices   # create site/data/prices.json
-python3 -m http.server --directory site 8000   # preview at http://localhost:8000
+npm test
+npm run fetch-prices
+python -m http.server --directory site 8000
 ```

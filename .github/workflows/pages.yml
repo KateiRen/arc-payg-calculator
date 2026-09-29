@@ -1,10 +1,10 @@
-name: Deploy pricing page to GitHub Pages
+name: Deploy calculator to GitHub Pages
 
 on:
   push:
     branches: [main]
   workflow_run:
-    workflows: [Refresh pricing snapshot]
+    workflows: [Refresh calculator prices]
     types: [completed]
   workflow_dispatch:
 

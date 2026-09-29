@@ -3,6 +3,7 @@
 const test = require('node:test');
 const assert = require('node:assert');
 const P = require('../site/pricing.js');
+const U = require('../scripts/fetch-prices.js');
 
 const item = (over) => Object.assign({
   currencyCode: 'USD', unitPrice: 0.1, location: 'Global', meterName: 'm', productName: 'p',
@@ -21,6 +22,13 @@ test('covers all currencies from the original query', () => {
     ['USD', 'EUR', 'AUD', 'BRL', 'CAD', 'CHF', 'DKK', 'GBP', 'INR', 'JPY', 'KRW', 'NOK', 'NZD', 'SEK']);
 });
 
+test('queries the SQL and Windows Server Arc PAYG products', () => {
+  assert.match(P.API_FILTER, /Azure Arc-enabled SQL Server/);
+  assert.match(P.API_FILTER, /Az Arc Pay As You Go Windows Server/);
+  assert.deepStrictEqual(P.SKU_NAMES,
+    ['1 Core', 'Ent edition - PAYG', 'Std edition - PAYG']);
+});
+
 test('applyProxy supports placeholder and prefix styles', () => {
   const url = 'https://prices.azure.com/api/retail/prices?a=1';
   assert.strictEqual(P.applyProxy(url, ''), url);
@@ -37,7 +45,7 @@ test('transform filters, selects columns, sorts and adds refresh time', () => {
     item({ unitOfMeasure: '1/Month' }),
     item({ location: 'EU West' }),
     item({ skuName: 'Other' }),
-    item({ serviceName: 'a', productName: 'x', skuName: 'Standard', reservationTerm: '1 Year' }),
+    item({ serviceName: 'a', productName: 'x', skuName: 'Std edition - PAYG', reservationTerm: '1 Year' }),
   ], 'T');
   assert.deepStrictEqual(rows.map((r) => r.productName), ['x', 'y', 'z']);
   assert.deepStrictEqual(Object.keys(rows[0]), P.COLUMNS.concat('Last Refresh Time'));
@@ -100,4 +108,78 @@ test('toCsv quotes separators/newlines, renders null as empty and neutralizes fo
   assert.ok(line.includes(",'=1+1,"));
   assert.ok(line.startsWith('USD,-1,'));
   assert.ok(line.includes(',,T'));
+});
+
+test('buildEmbeddedPrices maps SQL and Windows meters and preserves SPLA values', () => {
+  const rows = P.CURRENCIES.flatMap((currency, index) => [
+    item({
+      currencyCode: currency,
+      productName: U.SQL_PRODUCT,
+      meterName: 'Std edition - PAYG',
+      unitPrice: index + 0.1,
+    }),
+    item({
+      currencyCode: currency,
+      productName: U.SQL_PRODUCT,
+      meterName: 'Ent edition - PAYG',
+      unitPrice: index + 0.2,
+    }),
+    item({
+      currencyCode: currency,
+      productName: U.WINDOWS_PRODUCT,
+      meterName: '1 Core License',
+      unitPrice: index + 0.3,
+    }),
+  ]);
+
+  const prices = U.buildEmbeddedPrices(rows, {
+    'sql:USD': { spla1: 12, spla2: 34, splaEntered: true },
+  });
+
+  assert.deepStrictEqual(prices['sql:USD'], {
+    spla1: 12,
+    spla2: 34,
+    splaEntered: true,
+    payg1: 0.1,
+    payg2: 0.2,
+  });
+  assert.deepStrictEqual(prices['windows:SEK'], {
+    payg1: 13.3,
+    payg2: 13.3,
+  });
+});
+
+test('updateHtml rewrites embedded prices and refresh timestamps', () => {
+  const rows = P.CURRENCIES.flatMap((currency) => [
+    item({
+      currencyCode: currency,
+      productName: U.SQL_PRODUCT,
+      meterName: 'Std edition - PAYG',
+      unitPrice: 1,
+    }),
+    item({
+      currencyCode: currency,
+      productName: U.SQL_PRODUCT,
+      meterName: 'Ent edition - PAYG',
+      unitPrice: 2,
+    }),
+    item({
+      currencyCode: currency,
+      productName: U.WINDOWS_PRODUCT,
+      meterName: '1 Core License',
+      unitPrice: 3,
+    }),
+  ]);
+  const html = [
+    '<span id="time">old</span>',
+    'const EMBEDDED_PRICES={"sql:USD":{"spla1":4}};',
+    "const EMBEDDED_REFRESHED_AT='old';",
+  ].join('\n');
+  const timestamp = '2026-09-29T22:00:00.000Z';
+  const updated = U.updateHtml(html, rows, timestamp);
+
+  assert.match(updated, /"sql:USD":\{"spla1":4,"payg1":1,"payg2":2\}/);
+  assert.match(updated, /"windows:USD":\{"payg1":3,"payg2":3\}/);
+  assert.match(updated, /const EMBEDDED_REFRESHED_AT="2026-09-29T22:00:00.000Z";/);
+  assert.match(updated, /<span id="time">Azure prices refreshed 2026-09-29T22:00:00.000Z \(UTC\)<\/span>/);
 });

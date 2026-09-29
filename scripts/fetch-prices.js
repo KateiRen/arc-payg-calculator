@@ -1,23 +1,102 @@
 #!/usr/bin/env node
-// Fetches the current prices server-side and writes a snapshot that the
-// GitHub Pages site can load when the browser cannot call the API directly.
 'use strict';
 
 const fs = require('fs');
 const path = require('path');
-const { fetchAll } = require('../site/pricing.js');
+const { CURRENCIES, fetchAll } = require('../site/pricing.js');
 
-const output = process.argv[2] || path.join(__dirname, '..', 'site', 'data', 'prices.json');
+const SQL_PRODUCT = 'Azure Arc-enabled SQL Server - Arc-enabled servers';
+const WINDOWS_PRODUCT = 'Az Arc Pay As You Go Windows Server';
+const DEFAULT_OUTPUT = path.join(__dirname, '..', 'site', 'index.html');
 
-fetchAll({
-  onProgress: ({ currency, done, total }) => console.log(`Fetched ${currency} (${done}/${total})`),
-})
-  .then((result) => {
-    fs.mkdirSync(path.dirname(output), { recursive: true });
-    fs.writeFileSync(output, JSON.stringify(result, null, 2));
-    console.log(`Wrote ${result.rows.length} rows to ${output}`);
-  })
-  .catch((err) => {
-    console.error(err);
-    process.exit(1);
+function findPrice(rows, currency, productName, meterName) {
+  const matches = rows.filter((row) =>
+    row.currencyCode === currency &&
+    row.productName === productName &&
+    row.meterName === meterName);
+
+  if (matches.length !== 1) {
+    throw new Error(
+      `Expected one ${currency} ${productName} / ${meterName} meter, found ${matches.length}`);
+  }
+
+  const price = matches[0].unitPrice;
+  if (!Number.isFinite(price) || price < 0) {
+    throw new Error(`Invalid unit price for ${currency} ${productName} / ${meterName}`);
+  }
+  return price;
+}
+
+function buildEmbeddedPrices(rows, existingPrices = {}) {
+  const prices = { ...existingPrices };
+
+  for (const currency of CURRENCIES) {
+    const sqlStandard = findPrice(rows, currency, SQL_PRODUCT, 'Std edition - PAYG');
+    const sqlEnterprise = findPrice(rows, currency, SQL_PRODUCT, 'Ent edition - PAYG');
+    const windows = findPrice(rows, currency, WINDOWS_PRODUCT, '1 Core License');
+
+    prices[`sql:${currency}`] = {
+      ...(prices[`sql:${currency}`] || {}),
+      payg1: sqlStandard,
+      payg2: sqlEnterprise,
+    };
+    prices[`windows:${currency}`] = {
+      ...(prices[`windows:${currency}`] || {}),
+      payg1: windows,
+      payg2: windows,
+    };
+  }
+
+  return prices;
+}
+
+function parseEmbeddedPrices(html) {
+  const match = html.match(/const EMBEDDED_PRICES=(.*?);/);
+  if (!match) throw new Error('Embedded pricing marker not found in calculator HTML');
+  return JSON.parse(match[1]);
+}
+
+function updateHtml(html, rows, refreshTime) {
+  if (!/const EMBEDDED_REFRESHED_AT=.*?;/.test(html)) {
+    throw new Error('Embedded refresh-time marker not found in calculator HTML');
+  }
+
+  const prices = buildEmbeddedPrices(rows, parseEmbeddedPrices(html));
+  const visibleRefreshTime = `Azure prices refreshed ${refreshTime} (UTC)`;
+
+  return html
+    .replace(
+      /const EMBEDDED_PRICES=.*?;/,
+      `const EMBEDDED_PRICES=${JSON.stringify(prices)};`)
+    .replace(
+      /const EMBEDDED_REFRESHED_AT=.*?;/,
+      `const EMBEDDED_REFRESHED_AT=${JSON.stringify(refreshTime)};`)
+    .replace(
+      /(<span id="time">).*?(<\/span>)/,
+      `$1${visibleRefreshTime}$2`);
+}
+
+async function main(output = process.argv[2] || DEFAULT_OUTPUT) {
+  const result = await fetchAll({
+    onProgress: ({ currency, done, total }) =>
+      console.log(`Fetched ${currency} (${done}/${total})`),
   });
+  const html = fs.readFileSync(output, 'utf8');
+  fs.writeFileSync(output, updateHtml(html, result.rows, result.refreshTime));
+  console.log(`Updated embedded Azure prices and refresh time in ${output}`);
+}
+
+if (require.main === module) {
+  main().catch((error) => {
+    console.error(error);
+    process.exitCode = 1;
+  });
+}
+
+module.exports = {
+  SQL_PRODUCT,
+  WINDOWS_PRODUCT,
+  buildEmbeddedPrices,
+  parseEmbeddedPrices,
+  updateHtml,
+};

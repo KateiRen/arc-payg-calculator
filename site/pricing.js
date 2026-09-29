@@ -22,10 +22,9 @@
 
   const API_FILTER =
     "productName eq 'Azure Arc-enabled SQL Server - Arc-enabled servers'" +
-    " or productName eq 'Microsoft Defender for SQL'" +
-    " or skuId eq 'DZH318Z0LNG7/0007'";
+    " or productName eq 'Az Arc Pay As You Go Windows Server'";
 
-  const SKU_NAMES = ['1 Core', 'Ent edition - PAYG', 'Standard', 'Std edition - PAYG'];
+  const SKU_NAMES = ['1 Core', 'Ent edition - PAYG', 'Std edition - PAYG'];
 
   const COLUMNS = [
     'currencyCode', 'unitPrice', 'location', 'meterName', 'productName', 'skuName',

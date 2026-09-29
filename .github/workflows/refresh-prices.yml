@@ -1,8 +1,11 @@
-name: Refresh pricing snapshot
+name: Refresh calculator prices
 
 on:
   schedule:
-    - cron: '0 5 1 * *'
+    # GitHub cron is UTC-only. These cover midnight Pacific in PDT and PST;
+    # the first step below skips the occurrence with the wrong UTC offset.
+    - cron: '0 7 1 * *'
+    - cron: '0 8 1 * *'
   workflow_dispatch:
 
 permissions:
@@ -16,24 +19,48 @@ jobs:
   refresh:
     runs-on: ubuntu-latest
     steps:
+      - name: Check Pacific midnight schedule
+        id: timing
+        env:
+          EVENT_NAME: ${{ github.event_name }}
+          EVENT_SCHEDULE: ${{ github.event.schedule }}
+        run: |
+          if [[ "$EVENT_NAME" == "workflow_dispatch" ]]; then
+            echo "should_run=true" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+
+          pacific_offset="$(TZ=America/Los_Angeles date +%z)"
+          if [[ "$EVENT_SCHEDULE" == "0 7 1 * *" && "$pacific_offset" == "-0700" ]] ||
+             [[ "$EVENT_SCHEDULE" == "0 8 1 * *" && "$pacific_offset" == "-0800" ]]; then
+            echo "should_run=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "should_run=false" >> "$GITHUB_OUTPUT"
+            echo "Skipping duplicate UTC schedule for Pacific offset $pacific_offset."
+          fi
       - uses: actions/checkout@v4
+        if: steps.timing.outputs.should_run == 'true'
         with:
           ref: main
       - uses: actions/setup-node@v4
+        if: steps.timing.outputs.should_run == 'true'
         with:
           node-version: 20
       - name: Run tests
+        if: steps.timing.outputs.should_run == 'true'
         run: npm test
-      - name: Fetch price snapshot
+      - name: Refresh embedded calculator prices
+        if: steps.timing.outputs.should_run == 'true'
         run: npm run fetch-prices
-      - name: Commit price snapshot
+      - name: Commit calculator price refresh
+        if: steps.timing.outputs.should_run == 'true'
         run: |
-          if git diff --quiet -- site/data/prices.json; then
-            echo "Price snapshot is unchanged."
+          if git diff --quiet -- site/index.html; then
+            echo "Calculator prices and refresh time are unchanged."
             exit 0
           fi
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add site/data/prices.json
-          git commit -m "chore: refresh pricing snapshot"
+          git add site/index.html
+          git commit -m "chore: refresh calculator prices"
           git push
