@@ -113,7 +113,9 @@
   }
 
   function csvEscape(value) {
-    const s = value == null ? '' : String(value);
+    let s = value == null ? '' : String(value);
+    // Neutralize text that spreadsheet apps would interpret as a formula.
+    if (typeof value === 'string' && /^[=+\-@\t\r]/.test(s)) s = "'" + s;
     return /[",\r\n;]/.test(s) ? '"' + s.replace(/"/g, '""') + '"' : s;
   }
 

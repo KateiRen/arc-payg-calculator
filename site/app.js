@@ -130,7 +130,7 @@
   function validProxy(value) {
     if (!value) return '';
     let url;
-    try { url = new URL(value.replace('{url}', '')); } catch (e) { return null; }
+    try { url = new URL(value.split('{url}').join('')); } catch (e) { return null; }
     return url.protocol === 'https:' || url.protocol === 'http:' ? value : null;
   }
 
@@ -174,7 +174,7 @@
       if (!response.ok) throw new Error('HTTP ' + response.status);
       const snapshot = await response.json();
       setRows(Array.isArray(snapshot.rows) ? snapshot.rows : []);
-      setStatus('Snapshot loaded: ' + rows.length + ' rows, refreshed ' + new Date(snapshot.refreshTime).toLocaleString() + '.');
+      setStatus('Snapshot loaded: ' + rows.length + ' rows, refreshed ' + (formatValue('Last Refresh Time', snapshot.refreshTime) || 'unknown') + '.');
     } catch (err) {
       if (!quiet) setStatus('No published snapshot available (' + err.message + ').', true);
       else setStatus('Click "Get live prices" to load data.');

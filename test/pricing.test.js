@@ -90,3 +90,14 @@ test('toCsv escapes values', () => {
   assert.strictEqual(header, P.COLUMNS.concat('Last Refresh Time').join(','));
   assert.ok(line.includes('"a,""b"""'));
 });
+
+test('toCsv quotes separators/newlines, renders null as empty and neutralizes formulas', () => {
+  const csv = P.toCsv([Object.assign(item({ meterName: 'a;b', productName: 'x\ny', skuName: '=1+1', unitPrice: -1 }),
+    { 'Last Refresh Time': 'T' })]);
+  const line = csv.slice(csv.indexOf('\r\n') + 2);
+  assert.ok(line.includes('"a;b"'));
+  assert.ok(line.includes('"x\ny"'));
+  assert.ok(line.includes(",'=1+1,"));
+  assert.ok(line.startsWith('USD,-1,'));
+  assert.ok(line.includes(',,T'));
+});
