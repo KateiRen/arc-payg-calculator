@@ -198,4 +198,10 @@ test('published calculator uses workflow pricing and offers an offline copy', ()
   assert.match(html, /id="saveOfflineInstruction" hidden/);
   assert.match(html, /\$\('saveOffline'\)\.hidden=\$\('saveOfflineInstruction'\)\.hidden=!onGitHubPages/);
   assert.match(html, /if\(onGitHubPages\)\$\('saveOffline'\)\.onclick=saveOfflineFile/);
+  assert.match(html, /id="offlineNotice"[\s\S]*hidden/);
+  assert.match(html, /const OFFLINE_EXPORTED_AT=null;/);
+  assert.match(html, /const OFFLINE_EXPORTED_AT=\$\{JSON\.stringify\(new Date\(\)\.toISOString\(\)\)\};/);
+  assert.match(html, /offline=location\.protocol==='file:'/);
+  assert.match(html, /\$\('offlineNotice'\)\.hidden=!offline/);
+  assert.match(html, /https:\/\/kateiren\.github\.io\/arc-payg-calculator\//);
 });
