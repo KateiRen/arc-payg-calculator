@@ -51,29 +51,14 @@ main > * { min-width: 0; }
   box-shadow: 0 1px 3px rgba(0, 0, 0, .06);
 }
 
-fieldset { border: none; margin: 0; padding: 0; }
-legend { font-weight: 600; margin-bottom: .5rem; }
-
-.chips { display: flex; flex-wrap: wrap; gap: .5rem; }
-.chip {
-  display: inline-flex; align-items: center; gap: .35rem;
-  border: 1px solid var(--border); border-radius: 999px;
-  padding: .25rem .75rem; cursor: pointer; user-select: none;
-}
-.chip:has(input:checked) { border-color: var(--accent); background: color-mix(in srgb, var(--accent) 12%, transparent); }
-
-.row { margin-top: .5rem; display: flex; gap: 1rem; }
-
-details { margin-top: 1rem; }
-summary { cursor: pointer; font-weight: 600; }
 .hint { color: var(--muted); font-size: .9rem; }
+.refresh-info { margin: .5rem 0 0; font-weight: 600; }
 label { font-size: .9rem; }
 
-input[type="text"], input[type="search"], select {
+input[type="search"], select {
   font: inherit; color: inherit; background: var(--bg);
   border: 1px solid var(--border); border-radius: 6px; padding: .4rem .6rem;
 }
-#proxy { width: 100%; margin-top: .25rem; }
 
 .actions { display: flex; flex-wrap: wrap; gap: .75rem; margin-top: 1rem; }
 button {
@@ -85,9 +70,6 @@ button:hover:not(:disabled) { border-color: var(--accent); }
 button:disabled { opacity: .5; cursor: not-allowed; }
 button.primary { background: var(--accent); border-color: var(--accent); color: #fff; }
 button.primary:hover:not(:disabled) { background: var(--accent-dark); }
-button.link { border: none; background: none; color: var(--accent); padding: 0; }
-
-progress { width: 100%; margin-top: 1rem; }
 #status { margin: .75rem 0 0; min-height: 1.5em; }
 #status.error { color: var(--error); }
 

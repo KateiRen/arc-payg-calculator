@@ -3,42 +3,19 @@
 
   const P = window.AzurePricing;
   const SNAPSHOT_URL = 'data/prices.json';
-  const PROXY_KEY = 'azurePricing.proxy';
   const HEADERS = P.COLUMNS.concat('Last Refresh Time');
 
   const $ = (id) => document.getElementById(id);
-  const form = $('query-form');
-  const currencyList = $('currency-list');
-  const proxyInput = $('proxy');
+  const lastRefresh = $('last-refresh');
   const statusEl = $('status');
-  const progress = $('progress');
   const viewCurrency = $('view-currency');
   const search = $('search');
   const rowCount = $('row-count');
   const table = $('results');
-  const buttons = [$('fetch-live'), $('load-snapshot')];
+  const loadButton = $('load-snapshot');
 
   let rows = [];
   let sort = { column: null, dir: 1 };
-
-  // Currency checkboxes
-  for (const code of P.CURRENCIES) {
-    const label = document.createElement('label');
-    label.className = 'chip';
-    const cb = document.createElement('input');
-    cb.type = 'checkbox';
-    cb.value = code;
-    cb.checked = true;
-    label.append(cb, document.createTextNode(code));
-    currencyList.append(label);
-  }
-  const currencyBoxes = () => Array.from(currencyList.querySelectorAll('input'));
-  $('select-all').addEventListener('click', () => currencyBoxes().forEach((cb) => { cb.checked = true; }));
-  $('select-none').addEventListener('click', () => currencyBoxes().forEach((cb) => { cb.checked = false; }));
-
-  // Proxy persistence
-  proxyInput.value = localStorage.getItem(PROXY_KEY) || '';
-  proxyInput.addEventListener('change', () => localStorage.setItem(PROXY_KEY, proxyInput.value.trim()));
 
   // Table header
   const headRow = table.tHead.rows[0];
@@ -64,8 +41,7 @@
   }
 
   function setBusy(busy) {
-    buttons.forEach((b) => { b.disabled = busy; });
-    progress.hidden = !busy;
+    loadButton.disabled = busy;
   }
 
   function formatValue(col, value) {
@@ -127,63 +103,29 @@
     render();
   }
 
-  function validProxy(value) {
-    if (!value) return '';
-    let url;
-    try { url = new URL(value.split('{url}').join('')); } catch (e) { return null; }
-    return url.protocol === 'https:' || url.protocol === 'http:' ? value : null;
-  }
-
-  form.addEventListener('submit', async (e) => {
-    e.preventDefault();
-    const currencies = currencyBoxes().filter((cb) => cb.checked).map((cb) => cb.value);
-    if (!currencies.length) { setStatus('Select at least one currency.', true); return; }
-    const proxy = validProxy(proxyInput.value.trim());
-    if (proxy === null) { setStatus('The proxy must be a valid http(s) URL.', true); return; }
-
+  async function loadSnapshot() {
     setBusy(true);
-    progress.max = currencies.length;
-    progress.value = 0;
-    setStatus('Fetching live prices…');
-    try {
-      const result = await P.fetchAll({
-        currencies,
-        proxy,
-        onProgress: ({ currency, done, total }) => {
-          progress.value = done;
-          setStatus('Fetched ' + currency + ' (' + done + '/' + total + ')…');
-        },
-      });
-      setRows(result.rows);
-      setStatus('Live data loaded: ' + result.rows.length + ' rows, refreshed ' + new Date(result.refreshTime).toLocaleString() + '.');
-    } catch (err) {
-      const corsHint = err instanceof TypeError
-        ? ' The browser blocked the request (most likely CORS). Configure a CORS proxy under "Advanced" or use the published snapshot.'
-        : '';
-      setStatus('Live request failed: ' + err.message + '.' + corsHint, true);
-    } finally {
-      setBusy(false);
-    }
-  });
-
-  async function loadSnapshot(quiet) {
-    setBusy(true);
-    progress.removeAttribute('value');
+    setStatus('Loading published prices…');
     try {
       const response = await fetch(SNAPSHOT_URL, { cache: 'no-cache' });
       if (!response.ok) throw new Error('HTTP ' + response.status);
       const snapshot = await response.json();
       setRows(Array.isArray(snapshot.rows) ? snapshot.rows : []);
-      setStatus('Snapshot loaded: ' + rows.length + ' rows, refreshed ' + (formatValue('Last Refresh Time', snapshot.refreshTime) || 'unknown') + '.');
+      const refreshTime = snapshot.refreshTime;
+      lastRefresh.textContent = formatValue('Last Refresh Time', refreshTime) || 'Unknown';
+      if (refreshTime) lastRefresh.dateTime = refreshTime;
+      else lastRefresh.removeAttribute('datetime');
+      setStatus('Stored prices loaded: ' + rows.length + ' rows.');
     } catch (err) {
-      if (!quiet) setStatus('No published snapshot available (' + err.message + ').', true);
-      else setStatus('Click "Get live prices" to load data.');
+      lastRefresh.textContent = 'Unavailable';
+      lastRefresh.removeAttribute('datetime');
+      setStatus('Published prices could not be loaded (' + err.message + ').', true);
     } finally {
       setBusy(false);
     }
   }
 
-  $('load-snapshot').addEventListener('click', () => loadSnapshot(false));
+  loadButton.addEventListener('click', loadSnapshot);
   viewCurrency.addEventListener('change', render);
   search.addEventListener('input', render);
 
@@ -199,5 +141,5 @@
   });
 
   render();
-  loadSnapshot(true);
+  loadSnapshot();
 })();

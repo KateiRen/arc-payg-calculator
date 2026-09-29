@@ -9,40 +9,19 @@
 <body>
   <header>
     <h1>Azure Arc-enabled SQL Server – PAYG Pricing</h1>
-    <p class="subtitle">Live retail prices from the <a href="https://learn.microsoft.com/rest/api/cost-management/retail-prices/azure-retail-prices" target="_blank" rel="noopener">Azure Retail Prices API</a></p>
+    <p class="subtitle">Monthly retail price snapshot from the <a href="https://learn.microsoft.com/rest/api/cost-management/retail-prices/azure-retail-prices" target="_blank" rel="noopener">Azure Retail Prices API</a></p>
   </header>
 
   <main>
-    <form id="query-form" class="card" autocomplete="off">
-      <fieldset>
-        <legend>Currencies</legend>
-        <div id="currency-list" class="chips"></div>
-        <div class="row">
-          <button type="button" id="select-all" class="link">Select all</button>
-          <button type="button" id="select-none" class="link">Select none</button>
-        </div>
-      </fieldset>
-
-      <details>
-        <summary>Advanced: CORS proxy</summary>
-        <p class="hint">
-          The Azure Retail Prices API does not always allow direct calls from a browser (CORS).
-          If the live request fails, enter a CORS proxy URL. Use <code>{url}</code> as placeholder
-          for the encoded API URL, otherwise the encoded URL is appended.
-          Example: <code>https://corsproxy.io/?url={url}</code>
-        </p>
-        <label for="proxy">Proxy URL</label>
-        <input type="text" id="proxy" placeholder="(none – call the API directly)">
-      </details>
-
+    <section class="card">
+      <p class="hint">Prices are refreshed from the API on the first day of every month and stored with this site.</p>
+      <p class="refresh-info">Last refresh: <time id="last-refresh">Loading…</time></p>
       <div class="actions">
-        <button type="submit" id="fetch-live" class="primary">Get live prices</button>
-        <button type="button" id="load-snapshot">Load published snapshot</button>
+        <button type="button" id="load-snapshot" class="primary">Reload prices</button>
         <button type="button" id="download-csv" disabled>Download CSV</button>
       </div>
-      <progress id="progress" value="0" max="1" hidden></progress>
       <p id="status" role="status" aria-live="polite"></p>
-    </form>
+    </section>
 
     <section class="card">
       <div class="toolbar">

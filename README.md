@@ -14,15 +14,14 @@ It replaces the previous Excel/PowerQuery solution and applies the same logic:
 
 ## Using the page
 
-- **Get live prices** – calls the API directly from your browser for the selected currencies.
-- **Load published snapshot** – loads `data/prices.json`, which the GitHub Actions workflow fetches
-  server-side daily (loaded automatically when the page opens).
+- **Reload prices** – reloads the committed `data/prices.json` snapshot (also loaded automatically
+  when the page opens).
 - **Download CSV** – exports the currently shown rows (e.g. for Excel).
 
-The Azure Retail Prices API does not always send CORS headers, so browsers may block the live request.
-In that case either use the published snapshot or set a CORS proxy under *Advanced* (use `{url}` as a
-placeholder for the encoded API URL, e.g. `https://corsproxy.io/?url={url}`). The proxy setting is
-stored in your browser's local storage.
+The browser never calls the Azure Retail Prices API directly. The *Refresh pricing snapshot* GitHub
+Actions workflow fetches the prices server-side at 05:00 UTC on the first day of every month, commits
+`site/data/prices.json` to `main`, and its successful completion triggers a Pages deployment. It can
+also be run manually from the repository's **Actions** tab.
 
 ## Project layout
 
@@ -31,12 +30,16 @@ stored in your browser's local storage.
 | `site/` | The static site that is published to GitHub Pages |
 | `site/pricing.js` | Shared fetch/filter/sort logic (browser and Node.js) |
 | `scripts/fetch-prices.js` | Creates the snapshot `site/data/prices.json` |
-| `.github/workflows/pages.yml` | Tests, fetches the snapshot and deploys to Pages on push to `main`, daily, or manually |
+| `.github/workflows/refresh-prices.yml` | Fetches and commits the snapshot monthly or manually |
+| `.github/workflows/pages.yml` | Tests and deploys the committed site on pushes to `main` or manually |
 
 ## Setup
 
 1. In the repository settings go to **Settings → Pages** and set **Source** to **GitHub Actions**.
-2. Push to `main` (or run the *Deploy pricing page to GitHub Pages* workflow manually).
+2. Ensure **Settings → Actions → General → Workflow permissions** allows read and write permissions.
+3. Run *Refresh pricing snapshot* once to create the initial snapshot, or generate and commit it
+   locally with `npm run fetch-prices`.
+4. Push to `main` (or run the *Deploy pricing page to GitHub Pages* workflow manually).
 
 ## Development
 
