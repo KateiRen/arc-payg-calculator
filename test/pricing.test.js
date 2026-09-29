@@ -2,6 +2,8 @@
 
 const test = require('node:test');
 const assert = require('node:assert');
+const fs = require('node:fs');
+const path = require('node:path');
 const P = require('../site/pricing.js');
 const U = require('../scripts/fetch-prices.js');
 
@@ -182,4 +184,14 @@ test('updateHtml rewrites embedded prices and refresh timestamps', () => {
   assert.match(updated, /"windows:USD":\{"payg1":3,"payg2":3\}/);
   assert.match(updated, /const EMBEDDED_REFRESHED_AT="2026-09-29T22:00:00.000Z";/);
   assert.match(updated, /<span id="time">Azure prices refreshed 2026-09-29T22:00:00.000Z \(UTC\)<\/span>/);
+});
+
+test('published calculator uses workflow pricing and offers an offline copy', () => {
+  const html = fs.readFileSync(path.join(__dirname, '..', 'site', 'index.html'), 'utf8');
+
+  assert.doesNotMatch(html, /id="refresh"|fetchAzurePrices|refreshPrices|\/api\/prices/);
+  assert.doesNotMatch(html, /id="saveUpdated"|saveUpdatedFile/);
+  assert.match(html, /<header[\s\S]*id="saveOffline"[\s\S]*<\/header>/);
+  assert.match(html, /function saveOfflineFile\(/);
+  assert.match(html, /\$\('saveOffline'\)\.onclick=saveOfflineFile/);
 });
