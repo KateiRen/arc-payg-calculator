@@ -195,6 +195,7 @@ test('published calculator uses workflow pricing and offers an offline copy', ()
   assert.match(html, /function saveOfflineFile\(/);
   assert.match(html, /location\.hostname==='kateiren\.github\.io'/);
   assert.match(html, /location\.pathname\.startsWith\('\/arc-payg-calculator\/'\)/);
-  assert.match(html, /\$\('saveOffline'\)\.hidden=!onGitHubPages/);
+  assert.match(html, /id="saveOfflineInstruction" hidden/);
+  assert.match(html, /\$\('saveOffline'\)\.hidden=\$\('saveOfflineInstruction'\)\.hidden=!onGitHubPages/);
   assert.match(html, /if\(onGitHubPages\)\$\('saveOffline'\)\.onclick=saveOfflineFile/);
 });
