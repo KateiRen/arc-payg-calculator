@@ -38,11 +38,11 @@ jobs:
             echo "should_run=false" >> "$GITHUB_OUTPUT"
             echo "Skipping duplicate UTC schedule for Pacific offset $pacific_offset."
           fi
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
         if: steps.timing.outputs.should_run == 'true'
         with:
           ref: main
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v5
         if: steps.timing.outputs.should_run == 'true'
         with:
           node-version: 20
