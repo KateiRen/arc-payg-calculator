@@ -205,4 +205,7 @@ test('published calculator uses workflow pricing and offers an offline copy', ()
   assert.match(html, /\$\('offlineNotice'\)\.hidden=!offline/);
   assert.match(html, /https:\/\/kateiren\.github\.io\/arc-payg-calculator\//);
   assert.doesNotMatch(html, /dco-tooltip|dcoTooltip|class="tooltip"|role="tooltip"/);
+  assert.match(html, /\.tabs\{display:flex;gap:0;overflow:hidden;border:1px solid var\(--line\);border-radius:11px/);
+  assert.match(html, /\.tabs \.tab\{flex:1;border:0;border-radius:0\}/);
+  assert.match(html, /\.tabs \.tab\+\.tab\{border-left:1px solid var\(--line\)\}/);
 });
