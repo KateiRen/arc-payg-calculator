@@ -211,6 +211,10 @@ test('published calculator uses workflow pricing and offers an offline copy', ()
   assert.match(html, /const SQLPAYG=\{/);
   assert.match(html, /function azurePricingSnapshot\(\).*?snapshot\[key\]=\{payg1:p\.payg1,payg2:p\.payg2\}/);
   assert.match(html, /const EMBEDDED_PRICES=\$\{JSON\.stringify\(azurePricingSnapshot\(\)\)\};/);
+  assert.match(html, /function ensureOfflinePrivacy\(content\)/);
+  assert.match(html, /Offline HTML must not contain a project name or configured workloads/);
+  assert.match(html, /return ensureOfflinePrivacy\(content\)/);
+  assert.doesNotMatch(html, /localStorage\.setItem\(['"](?:projectName|calculations|rows)/);
 
   const embedded = JSON.parse(/const EMBEDDED_PRICES=(.*?);/.exec(html)[1]);
   for (const price of Object.values(embedded)) {

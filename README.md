@@ -7,6 +7,8 @@ The calculator is self-contained in `site/index.html`. Azure PAYG prices for all
 supported currencies are embedded in that file so the published site loads
 without making a pricing API request. SPLA prices are not published publicly,
 remain user-provided, and are never embedded in hosted or offline HTML.
+Project names and configured workloads are likewise retained only in project
+JSON files and are never embedded in an offline HTML copy.
 
 ## Price refresh and deployment
 
