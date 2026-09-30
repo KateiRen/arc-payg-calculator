@@ -215,6 +215,10 @@ test('published calculator uses workflow pricing and offers an offline copy', ()
   assert.match(html, /Offline HTML must not contain a project name or configured workloads/);
   assert.match(html, /return ensureOfflinePrivacy\(content\)/);
   assert.doesNotMatch(html, /localStorage\.setItem\(['"](?:projectName|calculations|rows)/);
+  assert.match(html, /function defaultState\(\)\{return\{sql:\{currency:'EUR',rows:\[\{edition:'Standard',qty:1,cores:32,uptime:'7x24'\},\{edition:'Standard',qty:1,cores:16,uptime:'5x10'\}\]/);
+  assert.match(html, /windows:\{currency:'EUR',rows:\[\{edition:'Datacenter',qty:2,cores:8,uptime:'7x24'\},\{edition:'Datacenter',qty:1,cores:4,uptime:'5x10'\}\]/);
+  assert.match(html, /function resetAll\(\).*?let defaults=defaultState\(\);state\.sql=defaults\.sql;state\.windows=defaults\.windows/);
+  assert.doesNotMatch(html, /cores:220|qty:20|qty:40/);
 
   const embedded = JSON.parse(/const EMBEDDED_PRICES=(.*?);/.exec(html)[1]);
   for (const price of Object.values(embedded)) {
