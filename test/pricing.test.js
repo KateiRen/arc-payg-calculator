@@ -112,7 +112,7 @@ test('toCsv quotes separators/newlines, renders null as empty and neutralizes fo
   assert.ok(line.includes(',,T'));
 });
 
-test('buildEmbeddedPrices maps SQL and Windows meters and preserves SPLA values', () => {
+test('buildEmbeddedPrices maps only SQL and Windows Azure prices', () => {
   const rows = P.CURRENCIES.flatMap((currency, index) => [
     item({
       currencyCode: currency,
@@ -139,9 +139,6 @@ test('buildEmbeddedPrices maps SQL and Windows meters and preserves SPLA values'
   });
 
   assert.deepStrictEqual(prices['sql:USD'], {
-    spla1: 12,
-    spla2: 34,
-    splaEntered: true,
     payg1: 0.1,
     payg2: 0.2,
   });
@@ -180,7 +177,8 @@ test('updateHtml rewrites embedded prices and refresh timestamps', () => {
   const timestamp = '2026-09-29T22:00:00.000Z';
   const updated = U.updateHtml(html, rows, timestamp);
 
-  assert.match(updated, /"sql:USD":\{"spla1":4,"payg1":1,"payg2":2\}/);
+  assert.match(updated, /"sql:USD":\{"payg1":1,"payg2":2\}/);
+  assert.doesNotMatch(updated, /"spla1"|"spla2"|"splaEntered"/);
   assert.match(updated, /"windows:USD":\{"payg1":3,"payg2":3\}/);
   assert.match(updated, /const EMBEDDED_REFRESHED_AT="2026-09-29T22:00:00.000Z";/);
   assert.match(updated, /<span id="time">Azure prices refreshed 2026-09-29T22:00:00.000Z \(UTC\)<\/span>/);
@@ -209,4 +207,13 @@ test('published calculator uses workflow pricing and offers an offline copy', ()
   assert.match(html, /\.tabs \.tab\{flex:1;border:0;border-radius:0\}/);
   assert.match(html, /\.tabs \.tab\+\.tab\{border-left:1px solid var\(--line\)\}/);
   assert.match(html, /function compact\(v\)\{return new Intl\.NumberFormat\(undefined,\{style:'currency',currency:state\[pane\]\.currency,notation:'compact'/);
+  assert.doesNotMatch(html, /const WINSPLA=|const SQL=\{/);
+  assert.match(html, /const SQLPAYG=\{/);
+  assert.match(html, /function azurePricingSnapshot\(\).*?snapshot\[key\]=\{payg1:p\.payg1,payg2:p\.payg2\}/);
+  assert.match(html, /const EMBEDDED_PRICES=\$\{JSON\.stringify\(azurePricingSnapshot\(\)\)\};/);
+
+  const embedded = JSON.parse(/const EMBEDDED_PRICES=(.*?);/.exec(html)[1]);
+  for (const price of Object.values(embedded)) {
+    assert.deepStrictEqual(Object.keys(price).sort(), ['payg1', 'payg2']);
+  }
 });

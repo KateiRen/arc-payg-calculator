@@ -5,8 +5,8 @@ pay-as-you-go licensing and SPLA for SQL Server and Windows Server workloads.
 
 The calculator is self-contained in `site/index.html`. Azure PAYG prices for all
 supported currencies are embedded in that file so the published site loads
-without making a pricing API request. SPLA prices remain user-provided because
-they are not available from the Azure Retail Prices API.
+without making a pricing API request. SPLA prices are not published publicly,
+remain user-provided, and are never embedded in hosted or offline HTML.
 
 ## Price refresh and deployment
 

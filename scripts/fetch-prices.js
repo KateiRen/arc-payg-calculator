@@ -27,8 +27,8 @@ function findPrice(rows, currency, productName, meterName) {
   return price;
 }
 
-function buildEmbeddedPrices(rows, existingPrices = {}) {
-  const prices = { ...existingPrices };
+function buildEmbeddedPrices(rows) {
+  const prices = {};
 
   for (const currency of CURRENCIES) {
     const sqlStandard = findPrice(rows, currency, SQL_PRODUCT, 'Std edition - PAYG');
@@ -36,12 +36,10 @@ function buildEmbeddedPrices(rows, existingPrices = {}) {
     const windows = findPrice(rows, currency, WINDOWS_PRODUCT, '1 Core License');
 
     prices[`sql:${currency}`] = {
-      ...(prices[`sql:${currency}`] || {}),
       payg1: sqlStandard,
       payg2: sqlEnterprise,
     };
     prices[`windows:${currency}`] = {
-      ...(prices[`windows:${currency}`] || {}),
       payg1: windows,
       payg2: windows,
     };
@@ -50,18 +48,13 @@ function buildEmbeddedPrices(rows, existingPrices = {}) {
   return prices;
 }
 
-function parseEmbeddedPrices(html) {
-  const match = html.match(/const EMBEDDED_PRICES=(.*?);/);
-  if (!match) throw new Error('Embedded pricing marker not found in calculator HTML');
-  return JSON.parse(match[1]);
-}
-
 function updateHtml(html, rows, refreshTime) {
-  if (!/const EMBEDDED_REFRESHED_AT=.*?;/.test(html)) {
-    throw new Error('Embedded refresh-time marker not found in calculator HTML');
+  if (!/const EMBEDDED_PRICES=.*?;/.test(html) ||
+      !/const EMBEDDED_REFRESHED_AT=.*?;/.test(html)) {
+    throw new Error('Embedded pricing markers not found in calculator HTML');
   }
 
-  const prices = buildEmbeddedPrices(rows, parseEmbeddedPrices(html));
+  const prices = buildEmbeddedPrices(rows);
   const visibleRefreshTime = `Azure prices refreshed ${refreshTime} (UTC)`;
 
   return html
@@ -97,6 +90,5 @@ module.exports = {
   SQL_PRODUCT,
   WINDOWS_PRODUCT,
   buildEmbeddedPrices,
-  parseEmbeddedPrices,
   updateHtml,
 };
