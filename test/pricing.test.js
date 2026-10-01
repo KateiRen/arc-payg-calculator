@@ -206,7 +206,7 @@ test('published calculator uses workflow pricing and offers an offline copy', ()
   assert.match(html, /\.tabs\{display:flex;gap:0;overflow:hidden;border:1px solid var\(--line\);border-radius:11px/);
   assert.match(html, /\.tabs \.tab\{flex:1;border:0;border-radius:0\}/);
   assert.match(html, /\.tabs \.tab\+\.tab\{border-left:1px solid var\(--line\)\}/);
-  assert.match(html, /function compact\(v\)\{return new Intl\.NumberFormat\(undefined,\{style:'currency',currency:state\[pane\]\.currency,notation:'compact'/);
+  assert.match(html, /function compact\(v\)\{return new Intl\.NumberFormat\(undefined,\{style:'currency',currency:state\.currency,notation:'compact'/);
   assert.match(html, /labels=\['SPLA Incentive loss','Purchase price','MCI Core','Growth Accelerator','DCO'\]/);
   assert.doesNotMatch(html, /labels=\['SPLA loss','Purchase price','PEC','MCI','Accelerator','DCO'\]/);
   assert.match(html, /PEC_RATE=\.15/);
@@ -217,14 +217,18 @@ test('published calculator uses workflow pricing and offers an offline copy', ()
   assert.doesNotMatch(html, /const WINSPLA=|const SQL=\{/);
   assert.match(html, /const SQLPAYG=\{/);
   assert.match(html, /function azurePricingSnapshot\(\).*?snapshot\[key\]=\{payg1:p\.payg1,payg2:p\.payg2\}/);
+  assert.match(html, /return\{format:'arc-payg-spla-project',version:1,projectName:name,currency:state\.currency,azurePricesRefreshedAt:refreshedAt,calculations,pricing:pricingSnapshot\(\)\}/);
+  assert.doesNotMatch(html, /state\.(?:sql|windows)\.currency|state\[(?:product|pane)\]\.currency/);
+  assert.match(html, /let currency=data\.currency;if\(currency===undefined\)/);
+  assert.match(html, /calculations\[product\]=\{rows,hasSpla:s\.hasSpla/);
   assert.match(html, /const EMBEDDED_PRICES=\$\{JSON\.stringify\(azurePricingSnapshot\(\)\)\};/);
   assert.match(html, /function ensureOfflinePrivacy\(content\)/);
   assert.match(html, /Offline HTML must not contain a project name or configured workloads/);
   assert.match(html, /return ensureOfflinePrivacy\(content\)/);
   assert.doesNotMatch(html, /localStorage\.setItem\(['"](?:projectName|calculations|rows)/);
-  assert.match(html, /function defaultState\(\)\{return\{sql:\{currency:'EUR',rows:\[\{edition:'Standard',qty:1,cores:32,uptime:'7x24'\},\{edition:'Standard',qty:1,cores:16,uptime:'5x10'\}\]/);
-  assert.match(html, /windows:\{currency:'EUR',rows:\[\{edition:'Datacenter',qty:2,cores:8,uptime:'7x24'\},\{edition:'Datacenter',qty:1,cores:4,uptime:'5x10'\}\]/);
-  assert.match(html, /function resetAll\(\).*?let defaults=defaultState\(\);state\.sql=defaults\.sql;state\.windows=defaults\.windows/);
+  assert.match(html, /function defaultState\(\)\{return\{currency:'EUR',sql:\{rows:\[\{edition:'Standard',qty:1,cores:32,uptime:'7x24'\},\{edition:'Standard',qty:1,cores:16,uptime:'5x10'\}\]/);
+  assert.match(html, /windows:\{rows:\[\{edition:'Datacenter',qty:2,cores:8,uptime:'7x24'\},\{edition:'Datacenter',qty:1,cores:4,uptime:'5x10'\}\]/);
+  assert.match(html, /function resetAll\(\).*?Object\.assign\(state,defaultState\(\)\)/);
   assert.doesNotMatch(html, /cores:220|qty:20|qty:40/);
 
   const embedded = JSON.parse(/const EMBEDDED_PRICES=(.*?);/.exec(html)[1]);
