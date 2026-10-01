@@ -19,9 +19,9 @@ engine, submodule, or multi-repository build system.
 
 ## Terminology
 
-- **Direct repository**: `KateiRen/arc-payg-calculator`
+- **Direct repository**: `KateiRen/arc-payg-estimator`
 - **Direct working folder**:
-  `C:\Users\karstenh\GitHub\arc-payg-calculator`
+  `C:\Users\karstenh\GitHub\arc-payg-estimator`
 - **Indirect repository**: the new repository you will create
 - **Baseline tag**: `indirect-start`
 - **Shared change**: behavior that should remain identical in both calculators
@@ -46,7 +46,7 @@ Example names:
 Open PowerShell in the current Direct repository:
 
 ```powershell
-Set-Location 'C:\Users\karstenh\GitHub\arc-payg-calculator'
+Set-Location 'C:\Users\karstenh\GitHub\arc-payg-estimator'
 ```
 
 ### 1. Verify the repository
@@ -62,7 +62,7 @@ Expected results:
 - the current branch is `main`;
 - the working tree has no modified or untracked files;
 - `origin` points to
-  `https://github.com/KateiRen/arc-payg-calculator.git`.
+  `https://github.com/KateiRen/arc-payg-estimator.git`.
 
 If the working tree is not clean, commit the intended changes before continuing.
 Do not discard unfamiliar changes.
@@ -112,6 +112,7 @@ Verify the tag:
 git show --no-patch --oneline indirect-start
 ```
 
+'945f9a1 (HEAD -> main, tag: indirect-start, origin/main, origin/HEAD) Document channel variant workflow
 Record the displayed commit hash. This is the immutable comparison point for the
 later classification pass.
 
@@ -151,7 +152,7 @@ Set-Location 'C:\Users\karstenh\GitHub'
 Clone Direct into the new folder:
 
 ```powershell
-git clone 'https://github.com/KateiRen/arc-payg-calculator.git' '<INDIRECT_FOLDER>'
+git clone 'https://github.com/KateiRen/arc-payg-estimator.git' '<INDIRECT_FOLDER>'
 Set-Location "C:\Users\karstenh\GitHub\<INDIRECT_FOLDER>"
 ```
 
@@ -185,8 +186,8 @@ git remote -v
 Expected arrangement:
 
 ```text
-direct  https://github.com/KateiRen/arc-payg-calculator.git (fetch)
-direct  https://github.com/KateiRen/arc-payg-calculator.git (push)
+direct  https://github.com/KateiRen/arc-payg-estimator.git (fetch)
+direct  https://github.com/KateiRen/arc-payg-estimator.git (push)
 origin  https://github.com/KateiRen/<INDIRECT_REPO>.git (fetch)
 origin  https://github.com/KateiRen/<INDIRECT_REPO>.git (push)
 ```
@@ -236,7 +237,7 @@ URL and path references before treating the Indirect site as ready.
 Search for the current repository URL and path:
 
 ```powershell
-rg "kateiren\.github\.io|arc-payg-calculator" site test README.md .github
+rg "kateiren\.github\.io|arc-payg-estimator" site test README.md .github
 ```
 
 Update the relevant Indirect partner content and matching tests. Do not change the
@@ -578,7 +579,7 @@ created yet, correct the remotes rather than deleting history:
 ```powershell
 git remote -v
 git remote set-url origin 'https://github.com/KateiRen/<INDIRECT_REPO>.git'
-git remote set-url direct 'https://github.com/KateiRen/arc-payg-calculator.git'
+git remote set-url direct 'https://github.com/KateiRen/arc-payg-estimator.git'
 ```
 
 Never use `git reset --hard` or force-push as a routine setup step. If published

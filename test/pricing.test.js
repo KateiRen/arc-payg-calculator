@@ -192,7 +192,7 @@ test('published calculator uses workflow pricing and offers an offline copy', ()
   assert.match(html, /<header[\s\S]*id="saveOffline" hidden[\s\S]*<\/header>/);
   assert.match(html, /function saveOfflineFile\(/);
   assert.match(html, /location\.hostname==='kateiren\.github\.io'/);
-  assert.match(html, /location\.pathname\.startsWith\('\/arc-payg-calculator\/'\)/);
+  assert.match(html, /location\.pathname\.startsWith\('\/arc-payg-estimator\/'\)/);
   assert.match(html, /id="saveOfflineInstruction" hidden/);
   assert.match(html, /\$\('saveOffline'\)\.hidden=\$\('saveOfflineInstruction'\)\.hidden=!onGitHubPages/);
   assert.match(html, /if\(onGitHubPages\)\$\('saveOffline'\)\.onclick=saveOfflineFile/);
@@ -201,7 +201,7 @@ test('published calculator uses workflow pricing and offers an offline copy', ()
   assert.match(html, /const OFFLINE_EXPORTED_AT=\$\{JSON\.stringify\(new Date\(\)\.toISOString\(\)\)\};/);
   assert.match(html, /offline=location\.protocol==='file:'/);
   assert.match(html, /\$\('offlineNotice'\)\.hidden=!offline/);
-  assert.match(html, /https:\/\/kateiren\.github\.io\/arc-payg-calculator\//);
+  assert.match(html, /https:\/\/kateiren\.github\.io\/arc-payg-estimator\//);
   assert.doesNotMatch(html, /dco-tooltip|dcoTooltip|class="tooltip"|role="tooltip"/);
   assert.match(html, /\.tabs\{display:flex;gap:0;overflow:hidden;border:1px solid var\(--line\);border-radius:11px/);
   assert.match(html, /\.tabs \.tab\{flex:1;border:0;border-radius:0\}/);
