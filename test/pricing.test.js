@@ -217,6 +217,11 @@ test('published calculator uses workflow pricing and offers an offline copy', ()
   assert.doesNotMatch(html, /const WINSPLA=|const SQL=\{/);
   assert.match(html, /const SQLPAYG=\{/);
   assert.match(html, /function azurePricingSnapshot\(\).*?snapshot\[key\]=\{payg1:p\.payg1,payg2:p\.payg2\}/);
+  assert.match(html, /sqlServerStandardSpla:p\.spla1,sqlServerEnterpriseSpla:p\.spla2,sqlServerStandardPayg:p\.payg1,sqlServerEnterprisePayg:p\.payg2/);
+  assert.match(html, /windowsServerStandardSpla:p\.spla1,windowsServerDatacenterSpla:p\.spla2,windowsServerDatacenterPayg:p\.payg2/);
+  assert.match(html, /sqlServerStandardSpla\?\?p\.spla1/);
+  assert.match(html, /windowsServerDatacenterPayg\?\?p\.payg1/);
+  assert.match(html, /if\(data\?\.format==='arc-payg-spla-disti-project'\)throw Error\('This is a project of the Indirect Arc PAYG Estimator'\)/);
   assert.match(html, /return\{format:'arc-payg-spla-project',version:1,projectName:name,currency:state\.currency,azurePricesRefreshedAt:refreshedAt,calculations,pricing:pricingSnapshot\(\)\}/);
   assert.doesNotMatch(html, /state\.(?:sql|windows)\.currency|state\[(?:product|pane)\]\.currency/);
   assert.match(html, /let currency=data\.currency;if\(currency===undefined\)/);
