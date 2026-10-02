@@ -51,7 +51,7 @@ function buildEmbeddedPrices(rows) {
 function updateHtml(html, rows, refreshTime) {
   if (!/const EMBEDDED_PRICES=.*?;/.test(html) ||
       !/const EMBEDDED_REFRESHED_AT=.*?;/.test(html)) {
-    throw new Error('Embedded pricing markers not found in calculator HTML');
+    throw new Error('Embedded pricing markers not found in estimator HTML');
   }
 
   const prices = buildEmbeddedPrices(rows);

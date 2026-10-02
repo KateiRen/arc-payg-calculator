@@ -1,7 +1,7 @@
 # Channel Variant Workflow
 
-This guide describes how to create a second channel-specific calculator from the
-current Direct calculator while preserving Git history, giving the new calculator
+This guide describes how to create a second channel-specific estimator from the
+current Direct estimator while preserving Git history, giving the new estimator
 its own GitHub Pages URL, and keeping the repositories easy to compare later.
 
 The recommended sequence is:
@@ -9,8 +9,8 @@ The recommended sequence is:
 1. freeze and tag a clean Direct baseline;
 2. clone the full repository history;
 3. connect the clone to a new independent GitHub repository;
-4. build the Indirect calculator in the new repository;
-5. compare the completed Indirect calculator with the tagged Direct baseline;
+4. build the Indirect estimator in the new repository;
+5. compare the completed Indirect estimator with the tagged Direct baseline;
 6. mark meaningful source regions as `SHARED`, `DIRECT`, or `INDIRECT`;
 7. synchronize later shared fixes with focused cherry-picks.
 
@@ -24,7 +24,7 @@ engine, submodule, or multi-repository build system.
   `C:\Users\karstenh\GitHub\arc-payg-estimator`
 - **Indirect repository**: the new repository you will create
 - **Baseline tag**: `indirect-start`
-- **Shared change**: behavior that should remain identical in both calculators
+- **Shared change**: behavior that should remain identical in both estimators
 - **Partner change**: behavior that belongs only to Direct or only to Indirect
 
 Replace these placeholders in the commands below:
@@ -37,8 +37,8 @@ Replace these placeholders in the commands below:
 Example names:
 
 ```text
-<INDIRECT_REPO>   = arc-payg-indirect-calculator
-<INDIRECT_FOLDER> = arc-payg-indirect-calculator
+<INDIRECT_REPO>   = arc-payg-indirect-estimator
+<INDIRECT_FOLDER> = arc-payg-indirect-estimator
 ```
 
 ## Phase 1: Prepare the Direct baseline
@@ -102,7 +102,7 @@ git tag --list indirect-start
 If no tag is returned, create an annotated tag:
 
 ```powershell
-git tag -a indirect-start -m 'Baseline used to create the Indirect calculator'
+git tag -a indirect-start -m 'Baseline used to create the Indirect estimator'
 git push origin indirect-start
 ```
 
@@ -222,7 +222,7 @@ repository:
 3. Open **Settings > Actions > General**.
 4. Under **Workflow permissions**, allow read and write permissions so the
    monthly price-refresh workflow can commit.
-5. Open the **Actions** tab and manually run **Deploy calculator to GitHub
+5. Open the **Actions** tab and manually run **Deploy estimator to GitHub
    Pages**.
 
 The initial URL will normally be:
@@ -231,7 +231,7 @@ The initial URL will normally be:
 https://kateiren.github.io/<INDIRECT_REPO>/
 ```
 
-The copied calculator still contains Direct-specific URL checks. Update all hosted
+The copied estimator still contains Direct-specific URL checks. Update all hosted
 URL and path references before treating the Indirect site as ready.
 
 Search for the current repository URL and path:
@@ -243,7 +243,7 @@ rg "kateiren\.github\.io|arc-payg-estimator" site test README.md .github
 Update the relevant Indirect partner content and matching tests. Do not change the
 Azure Retail Prices API product names merely because the site URL changed.
 
-## Phase 4: Build the Indirect calculator
+## Phase 4: Build the Indirect estimator
 
 Build the new version in the Indirect repository without adding `SHARED`,
 `DIRECT`, or `INDIRECT` markers yet. The actual differences will provide a better
@@ -325,7 +325,7 @@ git diff --stat indirect-start..main
 git diff --name-status indirect-start..main
 ```
 
-Review the main calculator difference:
+Review the main estimator difference:
 
 ```powershell
 git diff --word-diff=color indirect-start..main -- site/index.html
@@ -387,9 +387,9 @@ Add markers only around meaningful sections, not every changed line.
 Direct:
 
 ```html
-<!-- SHARED: SQL/WINDOWS CALCULATOR UI START -->
+<!-- SHARED: SQL/WINDOWS ESTIMATOR UI START -->
 ...
-<!-- SHARED: SQL/WINDOWS CALCULATOR UI END -->
+<!-- SHARED: SQL/WINDOWS ESTIMATOR UI END -->
 
 <!-- DIRECT: PARTNER IMPACT UI START -->
 ...
@@ -399,9 +399,9 @@ Direct:
 Indirect:
 
 ```html
-<!-- SHARED: SQL/WINDOWS CALCULATOR UI START -->
+<!-- SHARED: SQL/WINDOWS ESTIMATOR UI START -->
 ...
-<!-- SHARED: SQL/WINDOWS CALCULATOR UI END -->
+<!-- SHARED: SQL/WINDOWS ESTIMATOR UI END -->
 
 <!-- INDIRECT: PARTNER IMPACT UI START -->
 ...
@@ -425,9 +425,9 @@ Use `INDIRECT` instead of `DIRECT` in the Indirect repository.
 ### CSS examples
 
 ```css
-/* SHARED: CALCULATOR PRESENTATION START */
+/* SHARED: ESTIMATOR PRESENTATION START */
 ...
-/* SHARED: CALCULATOR PRESENTATION END */
+/* SHARED: ESTIMATOR PRESENTATION END */
 
 /* INDIRECT: PARTNER PRESENTATION START */
 ...
@@ -541,7 +541,7 @@ Create a new repository-specific implementation instead.
 
 Do not normally share:
 
-- automated monthly commits named `chore: refresh calculator prices`;
+- automated monthly commits named `chore: refresh estimator prices`;
 - partner branding, URLs, instructions, defaults, or incentive rules;
 - GitHub Pages configuration that contains the other repository's path;
 - project files containing partner-entered data.

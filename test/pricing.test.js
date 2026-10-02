@@ -184,7 +184,7 @@ test('updateHtml rewrites embedded prices and refresh timestamps', () => {
   assert.match(updated, /<span id="time">Azure prices refreshed 2026-09-29T22:00:00.000Z \(UTC\)<\/span>/);
 });
 
-test('published calculator uses workflow pricing and offers an offline copy', () => {
+test('published estimator uses workflow pricing and offers an offline copy', () => {
   const html = fs.readFileSync(path.join(__dirname, '..', 'site', 'index.html'), 'utf8');
 
   assert.doesNotMatch(html, /id="refresh"|fetchAzurePrices|refreshPrices|\/api\/prices/);

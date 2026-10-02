@@ -1,10 +1,10 @@
-name: Deploy calculator to GitHub Pages
+name: Deploy estimator to GitHub Pages
 
 on:
   push:
     branches: [main]
   workflow_run:
-    workflows: [Refresh calculator prices]
+    workflows: [Refresh estimator prices]
     types: [completed]
   workflow_dispatch:
 

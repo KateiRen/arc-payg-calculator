@@ -1,4 +1,4 @@
-name: Refresh calculator prices
+name: Refresh estimator prices
 
 on:
   schedule:
@@ -49,18 +49,18 @@ jobs:
       - name: Run tests
         if: steps.timing.outputs.should_run == 'true'
         run: npm test
-      - name: Refresh embedded calculator prices
+      - name: Refresh embedded estimator prices
         if: steps.timing.outputs.should_run == 'true'
         run: npm run fetch-prices
-      - name: Commit calculator price refresh
+      - name: Commit estimator price refresh
         if: steps.timing.outputs.should_run == 'true'
         run: |
           if git diff --quiet -- site/index.html; then
-            echo "Calculator prices and refresh time are unchanged."
+            echo "Estimator prices and refresh time are unchanged."
             exit 0
           fi
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add site/index.html
-          git commit -m "chore: refresh calculator prices"
+          git commit -m "chore: refresh estimator prices"
           git push
